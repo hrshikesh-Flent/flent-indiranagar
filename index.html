@@ -1743,24 +1743,19 @@
     // Map type pill to readable label
     const livingPref = L.type === 'room' ? 'Private Room' : L.type === 'full' ? 'Full Home' : '';
 
-    // Submit to HubSpot Forms API (fire-and-forget)
-    fetch('https://api.hsforms.com/submissions/v3/integration/submit/45469632/2c8f6f35-1014-4e20-803f-f39866df0b18', {
+    // Submit to HubSpot (fire-and-forget)
+    const hsBody = new URLSearchParams({
+      firstname:               firstname,
+      lastname:                lastname,
+      email:                   L.email,
+      phone:                   L.phone,
+      lead_living_preferences: livingPref,
+      budget_range:            L.budget,
+    }).toString();
+    fetch('https://forms.hubspot.com/uploads/form/v2/45469632/2c8f6f35-1014-4e20-803f-f39866df0b18', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fields: [
-          { objectTypeId: '0-1', name: 'firstname',               value: firstname    },
-          { objectTypeId: '0-1', name: 'lastname',                value: lastname     },
-          { objectTypeId: '0-1', name: 'email',                   value: L.email      },
-          { objectTypeId: '0-1', name: 'phone',                   value: L.phone      },
-          { objectTypeId: '0-1', name: 'lead_living_preferences', value: livingPref   },
-          { objectTypeId: '0-1', name: 'budget_range',            value: L.budget     },
-        ],
-        context: {
-          pageUri:  window.location.href,
-          pageName: 'Flent Homes in Indiranagar'
-        }
-      })
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: hsBody
     }).catch(() => {});
 
     goTo('s2', 's3');
