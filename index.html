@@ -1758,6 +1758,25 @@
       body: hsBody
     }).catch(() => {});
 
+    // Submit to Flent callbacks via server-side proxy (secret never touches the browser)
+    const idempotencyKey = crypto.randomUUID();
+    fetch('/api/submit-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:            L.name,
+        phone:           L.phone,
+        email:           L.email,
+        type:            L.type,
+        config:          L.config,
+        area:            L.area,
+        budget:          L.budget,
+        movein:          L.movein,
+        idempotency_key: idempotencyKey,
+        page_url:        window.location.href,
+      }),
+    }).catch(() => {});
+
     goTo('s2', 's3');
   }
 
