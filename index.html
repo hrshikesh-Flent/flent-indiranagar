@@ -903,10 +903,13 @@
       font-size: clamp(1rem, 2vw, 1.125rem);
       color: var(--muted); margin-top: 10px; margin-bottom: 32px; line-height: 1.65;
     }
-    #flentMap {
-      height: 480px; border-radius: 20px; overflow: hidden;
+    .map-wrap {
+      border-radius: 20px; overflow: hidden;
       border: 1.5px solid var(--border);
       box-shadow: var(--shadow-card);
+    }
+    #flentMap {
+      height: 480px;
     }
     .map-legend {
       display: flex; flex-wrap: wrap; gap: 20px;
@@ -1331,7 +1334,7 @@
       <h2 class="section-title">Peak <em>Indiranagar.</em></h2>
       <p class="map-sub">Your Flent home. Five minutes from everything that matters.</p>
     </div>
-    <div id="flentMap" class="fade-up"></div>
+    <div class="map-wrap fade-up"><div id="flentMap"></div></div>
     <div class="map-legend fade-up">
       <div class="legend-item"><span class="leg-dot ld-flent"></span>Flent Homes</div>
       <div class="legend-item"><span class="leg-dot ld-transit"></span>Transit</div>
@@ -1872,6 +1875,7 @@
     scrollWheelZoom: false,
     zoomControl: true,
   });
+  setTimeout(function () { map.invalidateSize(); }, 300);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
