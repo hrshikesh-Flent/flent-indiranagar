@@ -1734,13 +1734,35 @@
     L.area   = f.area.value;
     L.budget = f.budget.value;
     L.movein = f.movein.value;
-    console.log('[Flent] Full lead:', L);
-    // Wire real endpoint here
-    fetch('/api/lead', {
+
+    // Split name into first / last
+    const nameParts = L.name.split(' ');
+    const firstname = nameParts[0] || L.name;
+    const lastname  = nameParts.slice(1).join(' ') || '';
+
+    // Map type pill to readable label
+    const livingPref = L.type === 'room' ? 'Private Room' : L.type === 'full' ? 'Full Home' : '';
+
+    // Submit to HubSpot Forms API (fire-and-forget)
+    fetch('https://api.hsforms.com/submissions/v3/integration/submit/45469632/2c8f6f35-1014-4e20-803f-f39866df0b18', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...L, source: 'indiranagar-lp', ts: new Date().toISOString() })
+      body: JSON.stringify({
+        fields: [
+          { objectTypeId: '0-1', name: 'firstname',               value: firstname    },
+          { objectTypeId: '0-1', name: 'lastname',                value: lastname     },
+          { objectTypeId: '0-1', name: 'email',                   value: L.email      },
+          { objectTypeId: '0-1', name: 'phone',                   value: L.phone      },
+          { objectTypeId: '0-1', name: 'lead_living_preferences', value: livingPref   },
+          { objectTypeId: '0-1', name: 'budget_range',            value: L.budget     },
+        ],
+        context: {
+          pageUri:  window.location.href,
+          pageName: 'Flent Homes in Indiranagar'
+        }
+      })
     }).catch(() => {});
+
     goTo('s2', 's3');
   }
 
