@@ -874,6 +874,24 @@
       text-align: center; margin-top: 12px;
     }
 
+    /* ── FORM VALIDATION ── */
+    .f-field input.err,
+    .f-field select.err {
+      border-color: var(--brick) !important;
+      background: rgba(191,74,54,0.04);
+    }
+    .type-toggles.err .type-pill:not(.on) {
+      border-color: var(--brick);
+      background: rgba(191,74,54,0.04);
+    }
+    @keyframes formShake {
+      10%, 90%  { transform: translateX(-3px); }
+      20%, 80%  { transform: translateX(5px); }
+      30%, 50%, 70% { transform: translateX(-6px); }
+      40%, 60%  { transform: translateX(6px); }
+    }
+    .form-shake { animation: formShake 0.45s cubic-bezier(.36,.07,.19,.97) both; }
+
     /* Confirm step */
     .conf-h {
       font-family: var(--ff-display);
@@ -1544,14 +1562,14 @@
       <form id="f2" onsubmit="sub2(event)" novalidate>
         <div class="f-field">
           <label>Home type</label>
-          <div class="type-toggles">
+          <div class="type-toggles" id="typeToggles">
             <button type="button" id="pR" class="type-pill" onclick="pickType('room')">Private Room</button>
             <button type="button" id="pF" class="type-pill" onclick="pickType('full')">Full Home</button>
           </div>
         </div>
         <div class="f-field hidden" id="configField">
           <label>Configuration</label>
-          <div class="type-toggles">
+          <div class="type-toggles" id="configToggles">
             <button type="button" id="cfg2" class="type-pill" onclick="pickCfg('2bhk')">2 BHK</button>
             <button type="button" id="cfg3" class="type-pill" onclick="pickCfg('3bhk')">3 BHK</button>
             <button type="button" id="cfg4" class="type-pill" onclick="pickCfg('4bhk')">4 BHK</button>
@@ -1674,14 +1692,25 @@
     }
   }
 
+  function markErr(el) {
+    el.classList.add('err');
+    el.classList.remove('form-shake');
+    void el.offsetWidth;
+    el.classList.add('form-shake');
+    el.addEventListener('input', () => el.classList.remove('err', 'form-shake'), { once: true });
+  }
+
   function sub1(e) {
     e.preventDefault();
     const f = e.target;
-    if (!f.name.value.trim() || !f.email.value.trim() || !f.phone.value.trim()) return;
+    let ok = true;
+    if (!f.name.value.trim())  { markErr(f.name);  ok = false; }
+    if (!f.email.value.trim() || !f.email.value.includes('@')) { markErr(f.email); ok = false; }
+    if (f.phone.value.trim().length !== 10) { markErr(f.phone); ok = false; }
+    if (!ok) return;
     L.name  = f.name.value.trim();
     L.email = f.email.value.trim();
     L.phone = '+91' + f.phone.value.trim();
-    console.log('[Flent] Step 1:', L);
     goTo('s1', 's2');
   }
 
@@ -1689,6 +1718,7 @@
     homeType = t;
     document.getElementById('pR').classList.toggle('on', t === 'room');
     document.getElementById('pF').classList.toggle('on', t === 'full');
+    document.getElementById('typeToggles').classList.remove('err', 'form-shake');
     const configField = document.getElementById('configField');
     configField.classList.toggle('hidden', t !== 'full');
     if (t !== 'full') {
@@ -1724,11 +1754,33 @@
   function pickCfg(c) {
     homeConfig = c;
     ['cfg2','cfg3','cfg4'].forEach(id => document.getElementById(id).classList.toggle('on', id === 'cfg' + c.replace('bhk','')));
+    document.getElementById('configToggles').classList.remove('err', 'form-shake');
+  }
+
+  function markErrToggles(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('err');
+    el.classList.remove('form-shake');
+    void el.offsetWidth;
+    el.classList.add('form-shake');
   }
 
   function sub2(e) {
     e.preventDefault();
     const f = e.target;
+    let ok = true;
+
+    if (!homeType) {
+      markErrToggles('typeToggles');
+      ok = false;
+    }
+    if (homeType === 'full' && !homeConfig) {
+      markErrToggles('configToggles');
+      ok = false;
+    }
+    if (!ok) return;
+
     L.type   = homeType;
     L.config = homeConfig;
     L.area   = f.area.value;
